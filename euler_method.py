@@ -47,3 +47,23 @@ def solve(a, b, h, x0, y0, func):
     result_time = end_time - start_time
 
     return {'xarr': xarr, 'yarr': yarr, 'accuracy': h, 'time': result_time}
+
+
+def accuracy_is_achieved_runge(yarr1, yarr2, accuracy):
+    for i in range(len(yarr1)):
+        if math.fabs(yarr1[i] - yarr2[i * 2]) > accuracy:
+            return False
+    return True
+
+
+def solve_runge(a, b, h, x0, y0, accuracy, func):
+    # print('Solving euler at h =', h)
+    result1 = solve(a, b, h, x0, y0, func)
+    result2 = solve(a, b, h / 2, x0, y0, func)
+
+    if accuracy_is_achieved_runge(result1['yarr'], result2['yarr'], accuracy):
+        result2['accuracy'] = accuracy
+        print("Euler solved at h =", h / 2)
+        return result2
+    else:
+        return solve_runge(a, b, h / 2, x0, y0, accuracy, func)

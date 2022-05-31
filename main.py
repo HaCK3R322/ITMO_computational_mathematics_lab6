@@ -16,10 +16,23 @@ def lab6_interactive():
     b = float(input('Enter b:\n>>> '))
     x0 = float(input('Enter x0:\n>>> y(x0) = y0, x0 = '))
     y0 = float(input('Enter y0:\n>>> y(x0) = y0, y0 = '))
-    h = float(input('Enter step size:\n>>> '))
+    accuracy = float(input('Enter accuracy:\n>>> '))
+    h = float(input('Enter start h:\n>>> '))
 
-    euler_answer = euler_method.solve(a, b, h, x0, y0, function)
-    adams_answer = adams_method.solve(a, b, h, x0, y0, 4, function)
+    from timeit import default_timer
+    start_time = default_timer()
+
+    euler_answer = euler_method.solve_runge(a, b, h, x0, y0, accuracy, function)
+    # time
+    end_time = default_timer()
+    result_time = end_time - start_time
+    euler_answer['time'] = result_time
+
+    adams_answer = adams_method.solve_runge(a, b, h, x0, y0, accuracy, function)
+    # time
+    end_time = default_timer()
+    result_time = end_time - start_time
+    adams_answer['time'] = result_time
 
     need_yarr_true = input("Do you have true solved function to print? (y/anything else)\n>>> ")
     if need_yarr_true == 'y':
@@ -48,7 +61,15 @@ def lab6_standard():
                              transformations=sp.parsing.sympy_parser.standard_transformations)
 
     # euler
-    euler_answer = euler_method.solve(-1, 1, 0.001, 0, 2, function)
+    from timeit import default_timer
+    start_time = default_timer()
+
+    euler_answer = euler_method.solve_runge(-1, 1, 0.1, 0, 2, 0.01, function)
+
+    end_time = default_timer()
+    result_time = end_time - start_time
+    euler_answer['time'] = result_time
+
     print("Euler method computation time:", euler_answer['time'], "Accuracy:", euler_answer['accuracy'])
     true_yarr = []
     for x in euler_answer['xarr']:
@@ -61,7 +82,14 @@ def lab6_standard():
     plt.show()
 
     # adams
-    adams_answer = adams_method.solve(-1, 1, 0.001, 0, 2, 4, function)
+    start_time = default_timer()
+
+    adams_answer = adams_method.solve_runge(-1, 0.1, 1, 0, 2, 0.01, function)
+
+    end_time = default_timer()
+    result_time = end_time - start_time
+    adams_answer['time'] = result_time
+
     print("Adams method computation time:", adams_answer['time'], "Accuracy:", adams_answer['accuracy'])
     true_yarr.clear()
     for x in adams_answer['xarr']:

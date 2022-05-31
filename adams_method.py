@@ -1,3 +1,5 @@
+import math
+
 import sympy as sp
 import euler_method
 
@@ -24,7 +26,7 @@ def adams_formula(yi, h, func_arr):
     return y
 
 
-def solve(a, b, h, x0, y0, k, func):
+def solve(a, b, h, x0, y0, func):
     """
     Solves first-order homogeneous differential equation. (first 4 approximations based on euler method)
 
@@ -39,13 +41,9 @@ def solve(a, b, h, x0, y0, k, func):
     :type x0: float
     :param y0: y0 in y(x0) = y0
     :type y0: float
-    :param k: power of calculation (in this lab works only with k=4)
-    :type k: int
     :param func: right part of y' = func(x, y)
     :type func: sp.Expr
     """
-    if k != 4:
-        raise ValueError('Cannot work with k != 4 yet.')
 
     from timeit import default_timer
     start_time = default_timer()
@@ -106,3 +104,27 @@ def solve(a, b, h, x0, y0, k, func):
 
     result = {'xarr': xarr, 'yarr': yarr, 'accuracy': h ** 4, 'time': result_time}
     return result
+
+
+def accuracy_is_achieved_runge(yarr1, yarr2, accuracy):
+    try:
+        constanta = 2 ** 4 - 1
+        for i in range(len(yarr1) - 1):
+            if math.fabs((yarr1[i] - yarr2[i * 2]) / constanta) > accuracy:
+                return False
+        return True
+    except IndexError:
+        return True
+
+
+def solve_runge(a, b, h, x0, y0, accuracy, func):
+    # print('Solving adams at h =', h)
+    result1 = solve(a, b, h, x0, y0, func)
+    result2 = solve(a, b, h / 2, x0, y0, func)
+
+    if accuracy_is_achieved_runge(result1['yarr'], result2['yarr'], accuracy):
+        result2['accuracy'] = accuracy
+        print("Adams solved at h =", h / 2)
+        return result2
+    else:
+        return solve_runge(a, b, h / 2, x0, y0, accuracy, func)
