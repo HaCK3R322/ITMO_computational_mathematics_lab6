@@ -64,7 +64,7 @@ def lab6_standard():
     from timeit import default_timer
     start_time = default_timer()
 
-    euler_answer = euler_method.solve_runge(-1, 1, 0.1, 0, 2, 0.01, function)
+    euler_answer = euler_method.solve_runge(-1, 1, 0.1, 0, 2, 0.1, function)
 
     end_time = default_timer()
     result_time = end_time - start_time
@@ -84,7 +84,7 @@ def lab6_standard():
     # adams
     start_time = default_timer()
 
-    adams_answer = adams_method.solve_runge(-1, 0.1, 1, 0, 2, 0.01, function)
+    adams_answer = adams_method.solve_runge(-1, 1, 0.1, 0, 2, 0.1, function)
 
     end_time = default_timer()
     result_time = end_time - start_time
@@ -100,6 +100,10 @@ def lab6_standard():
     plt.title("Adams method (mode = standard, k = 4)")
     plt.savefig('graphic.jpg', dpi=1200)
     plt.show()
+
+    ax = adams_answer['xarr'][10]
+    print('Adams y(x) =', adams_answer['yarr'][10])
+    print('Close to true y(x) =', 2 * math.exp(-2 * ax))
 
 
 if __name__ == '__main__':

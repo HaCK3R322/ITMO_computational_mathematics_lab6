@@ -26,6 +26,32 @@ def adams_formula(yi, h, func_arr):
     return y
 
 
+def calculate_length(a, b, h):
+    length = int(math.fabs((b - a) / h))
+    if length % 2 != 0:
+        length += 1
+    return length
+
+
+def get_first_4_values(x0, h, y0, accuracy, func):
+    first_4_values_data = euler_method.solve_runge(x0, x0 + 3 * h, h, x0, y0, accuracy, func)
+    step = len(first_4_values_data['xarr']) // 4
+
+    xarr, yarr = [], []
+
+    xarr.append(first_4_values_data['xarr'][0 * step])
+    xarr.append(first_4_values_data['xarr'][1 * step])
+    xarr.append(first_4_values_data['xarr'][2 * step])
+    xarr.append(first_4_values_data['xarr'][3 * step])
+
+    yarr.append(first_4_values_data['yarr'][0 * step])
+    yarr.append(first_4_values_data['yarr'][1 * step])
+    yarr.append(first_4_values_data['yarr'][2 * step])
+    yarr.append(first_4_values_data['yarr'][3 * step])
+
+    return {'xarr': xarr, 'yarr': yarr}
+
+
 def solve(a, b, h, x0, y0, func):
     """
     Solves first-order homogeneous differential equation. (first 4 approximations based on euler method)
@@ -62,7 +88,7 @@ def solve(a, b, h, x0, y0, func):
         func_arr.append(func.subs({('x', first_4_xarr[i]), ('y', first_4_yarr[i])}))
 
     x = first_4_xarr[-1]  # setting x0 = last_x
-    right_length = int((b - first_4_xarr[-1]) / h)
+    right_length = calculate_length(first_4_xarr[-1], b, h)
     for i in range(3, right_length):
         y = yarr[-1]
         yarr.append(adams_formula(y, h, func_arr))
@@ -72,7 +98,7 @@ def solve(a, b, h, x0, y0, func):
         func_arr.append(func.subs({('x', x), ('y', y)}))
 
     # LEFT DIRECTION
-    first_4_values_data = euler_method.solve(x0 - 3 * h, x0, h, x0, y0, func)
+    first_4_values_data = euler_method.solve_runge(x0 - 3 * h, x0, h, x0, y0, h, func)
     first_4_xarr = first_4_values_data['xarr']
     first_4_yarr = first_4_values_data['yarr']
     for i in range(4):
@@ -81,7 +107,7 @@ def solve(a, b, h, x0, y0, func):
         func_arr.append(func.subs({('x', first_4_xarr[i]), ('y', first_4_yarr[i])}))
 
     x = first_4_xarr[-1]  # setting x0 = last_x
-    left_length = int((first_4_xarr[-1] - a) / h)
+    left_length = calculate_length(a, first_4_xarr[-1], h)
     for i in range(3, left_length):
         y = yarr[-1]
         yarr.append(adams_formula(y, -h, func_arr))
@@ -89,10 +115,6 @@ def solve(a, b, h, x0, y0, func):
         x -= h
         xarr.append(x)
         func_arr.append(func.subs({('x', x), ('y', y)}))
-
-    # ADD X0, Y0 AND SORT
-    xarr.append(x0)
-    yarr.append(y0)
 
     zipped_list = zip(xarr, yarr)
     sorted_pairs = sorted(zipped_list)
@@ -107,18 +129,18 @@ def solve(a, b, h, x0, y0, func):
 
 
 def accuracy_is_achieved_runge(yarr1, yarr2, accuracy):
-    try:
-        constanta = 2 ** 4 - 1
-        for i in range(len(yarr1) - 1):
-            if math.fabs((yarr1[i] - yarr2[i * 2]) / constanta) > accuracy:
-                return False
-        return True
-    except IndexError:
-        return True
+    print('Comparing arrays with length 1 =', len(yarr1), '     2 =', len(yarr2))
+    constanta = 2 ** 4 - 1
+    for i in range(len(yarr1) - 1):
+        if math.fabs((yarr1[i] - yarr2[i * 2]) / constanta) > accuracy:
+            return False
+    return True
 
 
 def solve_runge(a, b, h, x0, y0, accuracy, func):
-    # print('Solving adams at h =', h)
+    if h > accuracy:
+        h = accuracy
+
     result1 = solve(a, b, h, x0, y0, func)
     result2 = solve(a, b, h / 2, x0, y0, func)
 
