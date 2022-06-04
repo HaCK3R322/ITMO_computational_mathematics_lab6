@@ -27,13 +27,13 @@ def adams_formula(yi, h, func_arr):
 
 
 def calculate_length(a, b, h):
-    length = int(math.fabs((b - a) / h))
-    if length % 2 != 0:
-        length += 1
+    length = math.ceil(math.fabs((b - a) / h))
+    # if length % 2 != 0:
+    #     length -= 1
     return length
 
 
-def get_first_4_values(x0, h, y0, accuracy, func):
+def get_first_4_values(x0, y0, h, accuracy, func):
     first_4_values_data = euler_method.solve_runge(x0, x0 + 3 * h, h, x0, y0, accuracy, func)
     step = len(first_4_values_data['xarr']) // 4
 
@@ -79,7 +79,15 @@ def solve(a, b, h, x0, y0, func):
     func_arr = []
 
     # RIGHT DIRECTION
-    first_4_values_data = euler_method.solve(x0, x0 + 3 * h, h, x0, y0, func)
+    # first_4_values_data = euler_method.solve(x0, x0 + 3 * h, h, x0, y0, func)
+    # first_4_xarr = first_4_values_data['xarr']
+    # first_4_yarr = first_4_values_data['yarr']
+    # for i in range(4):
+    #     xarr.append(first_4_xarr[i])
+    #     yarr.append(first_4_yarr[i])
+    #     func_arr.append(func.subs({('x', first_4_xarr[i]), ('y', first_4_yarr[i])}))
+
+    first_4_values_data = get_first_4_values(x0, y0, h, h, func)
     first_4_xarr = first_4_values_data['xarr']
     first_4_yarr = first_4_values_data['yarr']
     for i in range(4):
@@ -98,7 +106,7 @@ def solve(a, b, h, x0, y0, func):
         func_arr.append(func.subs({('x', x), ('y', y)}))
 
     # LEFT DIRECTION
-    first_4_values_data = euler_method.solve_runge(x0 - 3 * h, x0, h, x0, y0, h, func)
+    first_4_values_data = get_first_4_values(x0, y0, -h, h, func)
     first_4_xarr = first_4_values_data['xarr']
     first_4_yarr = first_4_values_data['yarr']
     for i in range(4):
@@ -129,12 +137,21 @@ def solve(a, b, h, x0, y0, func):
 
 
 def accuracy_is_achieved_runge(yarr1, yarr2, accuracy):
-    print('Comparing arrays with length 1 =', len(yarr1), '     2 =', len(yarr2))
-    constanta = 2 ** 4 - 1
     for i in range(len(yarr1) - 1):
-        if math.fabs((yarr1[i] - yarr2[i * 2]) / constanta) > accuracy:
+        if math.fabs((yarr1[i] - yarr2[i * 2])) > accuracy:
             return False
     return True
+
+
+def solve_runge_with_help(a, b, h, x0, y0, accuracy, func, last_res):
+    result1 = last_res
+    result2 = solve(a, b, h / 2, x0, y0, func)
+
+    if accuracy_is_achieved_runge(result1['yarr'], result2['yarr'], accuracy):
+        result2['accuracy'] = accuracy
+        return result2
+    else:
+        return solve_runge_with_help(a, b, h / 2, x0, y0, accuracy, func, result2)
 
 
 def solve_runge(a, b, h, x0, y0, accuracy, func):
@@ -146,7 +163,7 @@ def solve_runge(a, b, h, x0, y0, accuracy, func):
 
     if accuracy_is_achieved_runge(result1['yarr'], result2['yarr'], accuracy):
         result2['accuracy'] = accuracy
-        print("Adams solved at h =", h / 2)
+        # print("Adams solved at h =", h / 2)
         return result2
     else:
-        return solve_runge(a, b, h / 2, x0, y0, accuracy, func)
+        return solve_runge_with_help(a, b, h / 2, x0, y0, accuracy, func, result2)

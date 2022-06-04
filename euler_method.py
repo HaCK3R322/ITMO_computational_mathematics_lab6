@@ -7,14 +7,14 @@ class WrongData(Exception):
 
 
 def solve(a, b, h, x0, y0, func):
-    if not (a <= x0 <= b):
+    if not (a <= x0 <= b or b <= x0 <= a):
         raise WrongData('x0 not in interval.')
 
     from timeit import default_timer
     start_time = default_timer()
 
-    right_length = int((b - x0) / h)
-    left_length = int((x0 - a) / h)
+    right_length = math.ceil(math.fabs((b - x0) / h))
+    left_length = math.ceil(math.fabs((x0 - a) / h))
 
     xarr = []
     yarr = []
@@ -35,9 +35,6 @@ def solve(a, b, h, x0, y0, func):
         xarr.append(x)
         yarr.append(y)
 
-    xarr.append(x0)
-    yarr.append(y0)
-
     zipped_list = zip(xarr, yarr)
     sorted_pairs = sorted(zipped_list)
     tuples = zip(*sorted_pairs)
@@ -56,6 +53,17 @@ def accuracy_is_achieved_runge(yarr1, yarr2, accuracy):
     return True
 
 
+def solve_runge_with_help(a, b, h, x0, y0, accuracy, func, last_res):
+    result1 = last_res
+    result2 = solve(a, b, h / 2, x0, y0, func)
+
+    if accuracy_is_achieved_runge(result1['yarr'], result2['yarr'], accuracy):
+        result2['accuracy'] = accuracy
+        return result2
+    else:
+        return solve_runge_with_help(a, b, h / 2, x0, y0, accuracy, func, result2)
+
+
 def solve_runge(a, b, h, x0, y0, accuracy, func):
     # print('Solving euler at h =', h)
     result1 = solve(a, b, h, x0, y0, func)
@@ -63,7 +71,7 @@ def solve_runge(a, b, h, x0, y0, accuracy, func):
 
     if accuracy_is_achieved_runge(result1['yarr'], result2['yarr'], accuracy):
         result2['accuracy'] = accuracy
-        print("Euler solved at h =", h / 2)
+        # print("Euler solved at h =", h / 2)
         return result2
     else:
-        return solve_runge(a, b, h / 2, x0, y0, accuracy, func)
+        return solve_runge_with_help(a, b, h / 2, x0, y0, accuracy, func, result2)
