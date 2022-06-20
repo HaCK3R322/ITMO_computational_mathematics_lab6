@@ -59,12 +59,28 @@ def lab6_standard():
     function = '-2 * y'
     function = sp.parse_expr(function,
                              transformations=sp.parsing.sympy_parser.standard_transformations)
+    a = -1
+    b = 1
+    start_h = 0.01
+    y0 = 0
+    x0 = 2
+    accuracy = 0.01  # adams time of accuracy:  +-=
+
+    print("--------------------")
+    print("Standard input for euler and adams:")
+    print("     a:             ", a)
+    print("     b:             ", b)
+    print("     Start h:       ", start_h)
+    print("     function:       y'= -2 * y")
+    print("     Cauchy problem: y(0) = 2")
+    print("     accuracy:      ", accuracy)
+    print("--------------------")
 
     # euler
     from timeit import default_timer
     start_time = default_timer()
 
-    euler_answer = euler_method.solve_runge(-1, 1, 0.1, 0, 2, 0.01, function)
+    euler_answer = euler_method.solve_runge(a, b, start_h, y0, x0, accuracy, function)
 
     end_time = default_timer()
     result_time = end_time - start_time
@@ -82,38 +98,40 @@ def lab6_standard():
     plt.show()
 
     # adams
+    print("\n")
+
     start_time = default_timer()
 
-    adams_answer = adams_method.solve_runge(-1, 1, 0.1, 0, 2, 0.01, function)
+    adams_answer = adams_method.solve_runge(a, b, start_h, y0, x0, accuracy, function)
 
     end_time = default_timer()
     result_time = end_time - start_time
     adams_answer['time'] = result_time
-
     print("Adams method computation time:", adams_answer['time'], "Accuracy:", adams_answer['accuracy'])
+
     true_yarr.clear()
     for x in adams_answer['xarr']:
         true_yarr.append(2 * math.exp(-2 * x))
-
     plt.plot(adams_answer['xarr'], true_yarr, 'g')
     plt.plot(adams_answer['xarr'], adams_answer['yarr'], 'b')
     plt.title("Adams method (mode = standard, k = 4)")
     plt.savefig('graphic.jpg', dpi=1200)
     plt.show()
 
-    print('\nAccuracy checking (for 10 element):')
-    euler_x = euler_answer['xarr'][10]
-    adams_x = adams_answer['xarr'][10]
+    checking_element = 20
+    print('\nAccuracy checking (for ' + str(checking_element) + ' element):')
+    euler_x = euler_answer['xarr'][checking_element]
+    adams_x = adams_answer['xarr'][checking_element]
 
-    print('EULER:   x  =', str(euler_x))
-    print('       y(x) =', euler_answer['yarr'][10])
+    print('EULER:   x[' + str(checking_element) + ']  =', str(euler_x))
+    print('       y(x) =', euler_answer['yarr'][checking_element])
     print('  true y(x) =', 2 * math.exp(-2 * euler_x))
-    print(' difference =', euler_answer['yarr'][10] - 2 * math.exp(-2 * euler_x), '\n')
+    print(' difference =', euler_answer['yarr'][checking_element] - 2 * math.exp(-2 * euler_x), '\n')
 
-    print('ADAMS:   x  =', str(adams_x))
-    print('       y(x) =', adams_answer['yarr'][10])
+    print('ADAMS:   x[' + str(checking_element) + ']  =', str(adams_x))
+    print('       y(x) =', adams_answer['yarr'][checking_element])
     print('  true y(x) =', 2 * math.exp(-2 * adams_x))
-    print(' difference =', adams_answer['yarr'][10] - 2 * math.exp(-2 * adams_x), '\n')
+    print(' difference =', adams_answer['yarr'][checking_element] - 2 * math.exp(-2 * adams_x), '\n')
 
 
 if __name__ == '__main__':

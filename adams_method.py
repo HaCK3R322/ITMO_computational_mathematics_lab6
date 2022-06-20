@@ -151,6 +151,7 @@ def solve_runge_with_help(a, b, h, x0, y0, accuracy, func, last_res):
         result2['accuracy'] = accuracy
         return result2
     else:
+        print("ADAMS: Accuracy not achieved. Recomputing at h =", h/2)
         return solve_runge_with_help(a, b, h / 2, x0, y0, accuracy, func, result2)
 
 
@@ -163,7 +164,7 @@ def solve_runge(a, b, h, x0, y0, accuracy, func):
 
     if accuracy_is_achieved_runge(result1['yarr'], result2['yarr'], accuracy):
         result2['accuracy'] = accuracy
-        # print("Adams solved at h =", h / 2)
+        print("Adams solved at h =", h / 2)
         return result2
     else:
         return solve_runge_with_help(a, b, h / 2, x0, y0, accuracy, func, result2)
